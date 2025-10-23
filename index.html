@@ -6,6 +6,8 @@
     <title>StudyBuddy Pro - Ultimate Student Productivity Suite</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* CSS Variables for Theming */
         :root {
@@ -126,6 +128,19 @@
             padding: 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .sidebar-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
         }
 
         .sidebar-header h1 {
@@ -816,6 +831,190 @@
             border-radius: var(--border-radius-sm);
         }
 
+        /* Calendar Styles */
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .calendar th {
+            padding: 12px;
+            text-align: center;
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .calendar td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--gray-light);
+            height: 100px;
+            vertical-align: top;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .calendar td:hover {
+            background-color: var(--gray-light);
+        }
+
+        .calendar td.today {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .calendar td.has-event {
+            background-color: rgba(52, 152, 219, 0.1);
+            position: relative;
+        }
+
+        .calendar td.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary);
+            border-radius: 50%;
+        }
+
+        .calendar-event {
+            font-size: 0.7rem;
+            background-color: var(--primary);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-top: 2px;
+            display: block;
+            text-align: left;
+        }
+
+        /* Flashcards Styles */
+        .flashcard-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 300px;
+            margin: 20px auto;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            background-color: white;
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .flashcard-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .flashcard-set {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .flashcard-set-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        /* Resources Styles */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .resource-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .resource-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: white;
+            background-color: var(--primary);
+        }
+
+        .resource-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .resource-card p {
+            color: var(--gray);
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
         /* Chart Container */
         .chart-container {
             margin-top: 20px;
@@ -961,6 +1160,9 @@
             .menu-toggle {
                 display: block;
             }
+            .sidebar-close {
+                display: block;
+            }
         }
 
         @media (max-width: 768px) {
@@ -992,6 +1194,11 @@
             }
             #focus-timer {
                 font-size: 3.5em;
+            }
+            .calendar td {
+                height: 70px;
+                padding: 5px;
+                font-size: 0.8rem;
             }
         }
 
@@ -1027,6 +1234,14 @@
                 flex-direction: column;
                 gap: 10px;
                 align-items: center;
+            }
+            .calendar td {
+                height: 60px;
+                padding: 3px;
+                font-size: 0.7rem;
+            }
+            .resources-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -1072,8 +1287,11 @@
         <div class="focus-header">
             <div class="focus-subject" id="focus-subject">Mathematics</div>
             <div class="focus-actions">
-                <button class="focus-action" onclick="pauseFocusTimer()">
+                <button class="focus-action" id="focus-pause-btn" onclick="pauseFocusTimer()">
                     <i class="fas fa-pause"></i> Pause
+                </button>
+                <button class="focus-action" id="focus-resume-btn" onclick="resumeFocusTimer()" style="display: none;">
+                    <i class="fas fa-play"></i> Resume
                 </button>
                 <button class="focus-action" onclick="resetFocusTimer()">
                     <i class="fas fa-stop"></i> Reset
@@ -1130,6 +1348,9 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
+                <button class="sidebar-close" id="sidebar-close">
+                    <i class="fas fa-times"></i>
+                </button>
                 <h1><i class="fas fa-graduation-cap"></i> StudyBuddy Pro</h1>
                 <p>Your Ultimate Study Companion</p>
             </div>
@@ -1185,7 +1406,7 @@
                 </div>
                 <div class="header-right">
                     <div class="header-actions">
-                        <button class="header-action" id="focus-mode-toggle" title="Focus Mode" onclick="toggleFocusMode()">
+                        <button class="header-action" id="focus-mode-toggle" title="Focus Mode" onclick="enterFocusMode()">
                             <i class="fas fa-crosshairs"></i>
                         </button>
                         <button class="header-action" id="notifications-toggle" title="Notifications">
@@ -1299,6 +1520,9 @@
                     <div class="card">
                         <div class="card-header">
                             <h2><i class="fas fa-tasks"></i> Task Manager</h2>
+                            <button onclick="exportTasksToPDF()" class="btn-secondary">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="input-section">
@@ -1371,6 +1595,9 @@
                     <div class="card">
                         <div class="card-header">
                             <h2><i class="fas fa-sticky-note"></i> Note Organizer</h2>
+                            <button onclick="exportNotesToPDF()" class="btn-secondary">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="input-section">
@@ -1481,7 +1708,8 @@
                                     <input type="number" id="break-time" value="5" min="1" aria-label="Break time in minutes">
                                     <input type="text" id="timer-subject" placeholder="Subject (optional)" aria-label="Timer subject">
                                     <button onclick="startPomodoro()"><i class="fas fa-play"></i> Start</button>
-                                    <button onclick="pausePomodoro()"><i class="fas fa-pause"></i> Pause</button>
+                                    <button id="pause-btn" onclick="pausePomodoro()"><i class="fas fa-pause"></i> Pause</button>
+                                    <button id="resume-btn" onclick="resumePomodoro()" style="display: none;"><i class="fas fa-play"></i> Resume</button>
                                     <button onclick="resetPomodoro()"><i class="fas fa-stop"></i> Reset</button>
                                     <button onclick="skipBreak()"><i class="fas fa-forward"></i> Skip Break</button>
                                     <button onclick="enterFocusMode()"><i class="fas fa-crosshairs"></i> Focus Mode</button>
@@ -1501,6 +1729,175 @@
                             <div class="mt-2">
                                 <h3><i class="fas fa-history"></i> Timer History</h3>
                                 <ul id="timer-history" class="list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Section -->
+                <div id="calendar" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-calendar-alt"></i> Study Calendar</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="calendar-header">
+                                <h3 id="calendar-month-year">January 2023</h3>
+                                <div class="calendar-nav">
+                                    <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                                    <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            <div class="calendar">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Sun</th>
+                                            <th>Mon</th>
+                                            <th>Tue</th>
+                                            <th>Wed</th>
+                                            <th>Thu</th>
+                                            <th>Fri</th>
+                                            <th>Sat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="calendar-body">
+                                        <!-- Calendar will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flashcards Section -->
+                <div id="flashcards" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-layer-group"></i> Flashcards</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-section">
+                                <div class="input-group">
+                                    <label for="flashcard-set-name">Set Name</label>
+                                    <input type="text" id="flashcard-set-name" placeholder="e.g., Biology Terms">
+                                </div>
+                                <div class="input-group">
+                                    <label for="flashcard-subject">Subject</label>
+                                    <select id="flashcard-subject">
+                                        <option value="General">General</option>
+                                        <option value="Mathematics">Mathematics</option>
+                                        <option value="Science">Science</option>
+                                        <option value="History">History</option>
+                                        <option value="Literature">Literature</option>
+                                        <option value="Languages">Languages</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>&nbsp;</label>
+                                    <button onclick="createFlashcardSet()"><i class="fas fa-plus"></i> Create Set</button>
+                                </div>
+                            </div>
+
+                            <div class="input-section">
+                                <div class="input-group">
+                                    <label for="flashcard-front">Front</label>
+                                    <input type="text" id="flashcard-front" placeholder="Term or question">
+                                </div>
+                                <div class="input-group">
+                                    <label for="flashcard-back">Back</label>
+                                    <input type="text" id="flashcard-back" placeholder="Definition or answer">
+                                </div>
+                                <div class="input-group">
+                                    <label>&nbsp;</label>
+                                    <button onclick="addFlashcard()"><i class="fas fa-plus"></i> Add Card</button>
+                                </div>
+                            </div>
+
+                            <div id="flashcard-sets">
+                                <!-- Flashcard sets will be populated by JavaScript -->
+                            </div>
+
+                            <div id="active-flashcard" style="display: none;">
+                                <div class="flashcard-container">
+                                    <div class="flashcard" id="flashcard" onclick="flipCard()">
+                                        <div class="flashcard-front">
+                                            <h3 id="flashcard-front-text">Front of card</h3>
+                                        </div>
+                                        <div class="flashcard-back">
+                                            <h3 id="flashcard-back-text">Back of card</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flashcard-controls">
+                                    <button onclick="previousCard()"><i class="fas fa-arrow-left"></i> Previous</button>
+                                    <button onclick="nextCard()">Next <i class="fas fa-arrow-right"></i></button>
+                                    <button onclick="shuffleCards()"><i class="fas fa-random"></i> Shuffle</button>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <span id="card-counter">Card 1 of 10</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resources Section -->
+                <div id="resources" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-book"></i> Study Resources</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="resources-grid">
+                                <div class="resource-card">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-video"></i>
+                                    </div>
+                                    <h3>Video Tutorials</h3>
+                                    <p>Access curated video tutorials for various subjects</p>
+                                    <button class="btn-secondary">Browse Videos</button>
+                                </div>
+                                <div class="resource-card">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <h3>Study Guides</h3>
+                                    <p>Download comprehensive study guides and cheat sheets</p>
+                                    <button class="btn-secondary">View Guides</button>
+                                </div>
+                                <div class="resource-card">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-link"></i>
+                                    </div>
+                                    <h3>Useful Links</h3>
+                                    <p>Collection of helpful websites and online resources</p>
+                                    <button class="btn-secondary">Explore Links</button>
+                                </div>
+                                <div class="resource-card">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-book-open"></i>
+                                    </div>
+                                    <h3>E-books</h3>
+                                    <p>Digital textbooks and reference materials</p>
+                                    <button class="btn-secondary">Browse Books</button>
+                                </div>
+                                <div class="resource-card">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-question-circle"></i>
+                                    </div>
+                                    <h3>Practice Tests</h3>
+                                    <p>Test your knowledge with practice exams</p>
+                                    <button class="btn-secondary">Take Tests</button>
+                                </div>
+                                <div class="resource-card">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <h3>Study Groups</h3>
+                                    <p>Connect with peers for collaborative learning</p>
+                                    <button class="btn-secondary">Join Groups</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1532,6 +1929,39 @@
                             </div>
                             <div class="chart-container">
                                 <canvas id="subjectChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals Section -->
+                <div id="goals" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-bullseye"></i> Study Goals</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-section">
+                                <div class="input-group">
+                                    <label for="goal-title">Goal Title</label>
+                                    <input type="text" id="goal-title" placeholder="e.g., Complete Calculus Course">
+                                </div>
+                                <div class="input-group">
+                                    <label for="goal-description">Description</label>
+                                    <input type="text" id="goal-description" placeholder="Goal description">
+                                </div>
+                                <div class="input-group">
+                                    <label for="goal-deadline">Target Date</label>
+                                    <input type="date" id="goal-deadline">
+                                </div>
+                                <div class="input-group">
+                                    <label>&nbsp;</label>
+                                    <button onclick="addGoal()"><i class="fas fa-plus"></i> Add Goal</button>
+                                </div>
+                            </div>
+
+                            <div id="goals-list">
+                                <!-- Goals will be populated by JavaScript -->
                             </div>
                         </div>
                     </div>
@@ -1595,51 +2025,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Other Sections (Placeholders) -->
-                <div id="calendar" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-calendar-alt"></i> Study Calendar</h2>
-                        </div>
-                        <div class="card-body">
-                            <p>Calendar functionality will be implemented in a future update.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="flashcards" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-layer-group"></i> Flashcards</h2>
-                        </div>
-                        <div class="card-body">
-                            <p>Flashcard functionality will be implemented in a future update.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="resources" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-book"></i> Study Resources</h2>
-                        </div>
-                        <div class="card-body">
-                            <p>Study Resources functionality will be implemented in a future update.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="goals" class="section">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-bullseye"></i> Study Goals</h2>
-                        </div>
-                        <div class="card-body">
-                            <p>Study Goals functionality will be implemented in a future update.</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1658,12 +2043,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Enhanced JavaScript with Focus Mode
+        // Enhanced JavaScript with All Features
         // Data Storage
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let notes = JSON.parse(localStorage.getItem('notes')) || [];
         let timerLogs = JSON.parse(localStorage.getItem('timerLogs')) || [];
         let goals = JSON.parse(localStorage.getItem('goals')) || [];
+        let flashcardSets = JSON.parse(localStorage.getItem('flashcardSets')) || [];
+        let calendarEvents = JSON.parse(localStorage.getItem('calendarEvents')) || [];
         let settings = JSON.parse(localStorage.getItem('settings')) || {
             theme: 'light',
             fontSize: '16px',
@@ -1673,6 +2060,7 @@
             defaultWorkTime: 25,
             defaultBreakTime: 5
         };
+        
         let timerInterval, totalTime, currentTime, isWorkSession = true, sessionCount = 0, streakCount = 0;
         let timerState = JSON.parse(localStorage.getItem('timerState')) || {
             isRunning: false,
@@ -1680,9 +2068,12 @@
             totalTime: 0,
             isWorkSession: true
         };
+        
+        let focusTimerInterval, focusTime, focusTotalTime, focusIsWorkSession = true;
         let currentModalAction = null;
-        let focusMode = false;
-        let focusTimerInterval;
+        let currentFlashcardSet = null;
+        let currentCardIndex = 0;
+        let currentDate = new Date();
 
         // Chart Initialization
         const progressCtx = document.getElementById('progressChart').getContext('2d');
@@ -1792,10 +2183,16 @@
             updateSessionInfo();
             initializeTimer();
             updateDashboard();
+            renderCalendar();
+            renderFlashcardSets();
+            renderGoals();
+            
             document.getElementById('timer-preset').addEventListener('change', updateTimerPreset);
             
             // Initialize event listeners
             document.getElementById('menu-toggle').addEventListener('click', toggleSidebar);
+            document.getElementById('sidebar-close').addEventListener('click', toggleSidebar);
+            
             document.querySelectorAll('.menu-item').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1855,25 +2252,29 @@
                 .sort((a, b) => new Date(b.created) - new Date(a.created))
                 .slice(0, 5);
             
-            recentTaskList.forEach(task => {
-                const li = document.createElement('li');
-                li.className = `list-item ${task.completed ? 'completed' : ''}`;
-                li.innerHTML = `
-                    <div class="list-item-content">
-                        <div class="list-item-title">${task.subject}: ${task.description}</div>
-                        <div class="list-item-meta">
-                            <span>Due: ${task.deadline}</span>
-                            <span>Priority: ${task.priority}</span>
+            if (recentTaskList.length === 0) {
+                recentTasks.innerHTML = '<li class="list-item text-center">No tasks yet. Add your first task!</li>';
+            } else {
+                recentTaskList.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = `list-item ${task.completed ? 'completed' : ''}`;
+                    li.innerHTML = `
+                        <div class="list-item-content">
+                            <div class="list-item-title">${task.subject}: ${task.description}</div>
+                            <div class="list-item-meta">
+                                <span>Due: ${task.deadline}</span>
+                                <span>Priority: ${task.priority}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="list-item-actions">
-                        <button class="complete" onclick="toggleComplete(${task.id})">
-                            <i class="fas fa-${task.completed ? 'undo' : 'check'}"></i> ${task.completed ? 'Undo' : 'Complete'}
-                        </button>
-                    </div>
-                `;
-                recentTasks.appendChild(li);
-            });
+                        <div class="list-item-actions">
+                            <button class="complete" onclick="toggleComplete(${task.id})">
+                                <i class="fas fa-${task.completed ? 'undo' : 'check'}"></i> ${task.completed ? 'Undo' : 'Complete'}
+                            </button>
+                        </div>
+                    `;
+                    recentTasks.appendChild(li);
+                });
+            }
             
             // Update recent notes
             const recentNotes = document.getElementById('recent-notes');
@@ -1882,25 +2283,29 @@
                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
                 .slice(0, 5);
             
-            recentNoteList.forEach(note => {
-                const li = document.createElement('li');
-                li.className = `list-item ${note.pinned ? 'pinned' : ''}`;
-                li.innerHTML = `
-                    <div class="list-item-content">
-                        <div class="list-item-title">${note.content}</div>
-                        <div class="list-item-meta">
-                            <span>${note.tag}</span>
-                            <span>${new Date(note.timestamp).toLocaleDateString()}</span>
+            if (recentNoteList.length === 0) {
+                recentNotes.innerHTML = '<li class="list-item text-center">No notes yet. Add your first note!</li>';
+            } else {
+                recentNoteList.forEach(note => {
+                    const li = document.createElement('li');
+                    li.className = `list-item ${note.pinned ? 'pinned' : ''}`;
+                    li.innerHTML = `
+                        <div class="list-item-content">
+                            <div class="list-item-title">${note.content}</div>
+                            <div class="list-item-meta">
+                                <span>${note.tag}</span>
+                                <span>${new Date(note.timestamp).toLocaleDateString()}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="list-item-actions">
-                        <button class="pin" onclick="pinNote(${note.id})">
-                            <i class="fas fa-thumbtack"></i> ${note.pinned ? 'Unpin' : 'Pin'}
-                        </button>
-                    </div>
-                `;
-                recentNotes.appendChild(li);
-            });
+                        <div class="list-item-actions">
+                            <button class="pin" onclick="pinNote(${note.id})">
+                                <i class="fas fa-thumbtack"></i> ${note.pinned ? 'Unpin' : 'Pin'}
+                            </button>
+                        </div>
+                    `;
+                    recentNotes.appendChild(li);
+                });
+            }
         }
 
         // Task Management (Enhanced)
@@ -2210,6 +2615,8 @@
             if (!timerState.isRunning) currentTime = totalTime;
             clearInterval(timerInterval);
             document.getElementById('timer-status').textContent = isWorkSession ? 'Working' : 'Break';
+            document.getElementById('pause-btn').style.display = 'inline-block';
+            document.getElementById('resume-btn').style.display = 'none';
             updateProgressRing((totalTime - currentTime) / totalTime);
             timerInterval = setInterval(() => {
                 const minutes = Math.floor(currentTime / 60);
@@ -2255,6 +2662,12 @@
             timerState.isRunning = false;
             localStorage.setItem('timerState', JSON.stringify(timerState));
             document.getElementById('timer-status').textContent = 'Paused';
+            document.getElementById('pause-btn').style.display = 'none';
+            document.getElementById('resume-btn').style.display = 'inline-block';
+        }
+
+        function resumePomodoro() {
+            startPomodoro(false);
         }
 
         function resetPomodoro() {
@@ -2266,6 +2679,8 @@
             localStorage.setItem('timerState', JSON.stringify(timerState));
             document.getElementById('timer').textContent = `${Math.floor(currentTime / 60)}:00`;
             document.getElementById('timer-status').textContent = 'Ready';
+            document.getElementById('pause-btn').style.display = 'inline-block';
+            document.getElementById('resume-btn').style.display = 'none';
             updateProgressRing(0);
             updateSessionInfo();
         }
@@ -2303,18 +2718,22 @@
         }
 
         function startFocusTimer(duration, isWork = true) {
-            let focusTime = duration;
+            focusTime = duration;
+            focusTotalTime = duration;
+            focusIsWorkSession = isWork;
             const focusTimerElement = document.getElementById('focus-timer');
             const focusStatusElement = document.getElementById('focus-status');
             
             focusStatusElement.textContent = isWork ? 'Working' : 'Break';
+            document.getElementById('focus-pause-btn').style.display = 'inline-block';
+            document.getElementById('focus-resume-btn').style.display = 'none';
             
             clearInterval(focusTimerInterval);
             focusTimerInterval = setInterval(() => {
                 const minutes = Math.floor(focusTime / 60);
                 const seconds = focusTime % 60;
                 focusTimerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-                updateFocusProgressRing((duration - focusTime) / duration);
+                updateFocusProgressRing((focusTotalTime - focusTime) / focusTotalTime);
                 focusTime--;
                 
                 if (focusTime < 0) {
@@ -2352,6 +2771,12 @@
         function pauseFocusTimer() {
             clearInterval(focusTimerInterval);
             document.getElementById('focus-status').textContent = 'Paused';
+            document.getElementById('focus-pause-btn').style.display = 'none';
+            document.getElementById('focus-resume-btn').style.display = 'inline-block';
+        }
+
+        function resumeFocusTimer() {
+            startFocusTimer(focusTime, focusIsWorkSession);
         }
 
         function resetFocusTimer() {
@@ -2359,6 +2784,8 @@
             const workTime = parseInt(document.getElementById('work-time').value) * 60;
             document.getElementById('focus-timer').textContent = `${Math.floor(workTime / 60)}:00`;
             document.getElementById('focus-status').textContent = 'Ready';
+            document.getElementById('focus-pause-btn').style.display = 'inline-block';
+            document.getElementById('focus-resume-btn').style.display = 'none';
             updateFocusProgressRing(0);
         }
 
@@ -2439,6 +2866,300 @@
             });
         }
 
+        // Calendar Functions
+        function renderCalendar() {
+            const calendarBody = document.getElementById('calendar-body');
+            const monthYear = document.getElementById('calendar-month-year');
+            
+            // Set month and year
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            monthYear.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            // Clear calendar
+            calendarBody.innerHTML = '';
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay();
+            
+            // Create calendar rows
+            let date = 1;
+            for (let i = 0; i < 6; i++) {
+                const row = document.createElement('tr');
+                
+                for (let j = 0; j < 7; j++) {
+                    const cell = document.createElement('td');
+                    
+                    if (i === 0 && j < startingDay) {
+                        // Empty cells before the first day of the month
+                        cell.textContent = '';
+                    } else if (date > daysInMonth) {
+                        // Empty cells after the last day of the month
+                        cell.textContent = '';
+                    } else {
+                        // Date cells
+                        cell.textContent = date;
+                        
+                        // Check if today
+                        const today = new Date();
+                        if (date === today.getDate() && 
+                            currentDate.getMonth() === today.getMonth() && 
+                            currentDate.getFullYear() === today.getFullYear()) {
+                            cell.classList.add('today');
+                        }
+                        
+                        // Check for events
+                        const cellDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), date);
+                        const dateString = cellDate.toISOString().split('T')[0];
+                        const events = calendarEvents.filter(event => event.date === dateString);
+                        
+                        if (events.length > 0) {
+                            cell.classList.add('has-event');
+                            events.forEach(event => {
+                                const eventEl = document.createElement('div');
+                                eventEl.className = 'calendar-event';
+                                eventEl.textContent = event.title;
+                                cell.appendChild(eventEl);
+                            });
+                        }
+                        
+                        date++;
+                    }
+                    
+                    row.appendChild(cell);
+                }
+                
+                calendarBody.appendChild(row);
+                
+                // Stop creating rows if we've displayed all days
+                if (date > daysInMonth) {
+                    break;
+                }
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        // Flashcard Functions
+        function createFlashcardSet() {
+            const name = document.getElementById('flashcard-set-name').value.trim();
+            const subject = document.getElementById('flashcard-subject').value;
+            
+            if (name) {
+                const newSet = {
+                    id: Date.now(),
+                    name,
+                    subject,
+                    cards: []
+                };
+                
+                flashcardSets.push(newSet);
+                localStorage.setItem('flashcardSets', JSON.stringify(flashcardSets));
+                renderFlashcardSets();
+                document.getElementById('flashcard-set-name').value = '';
+                showModal('Success', 'Flashcard set created!');
+            } else {
+                showModal('Error', 'Please enter a set name.');
+            }
+        }
+
+        function renderFlashcardSets() {
+            const setsContainer = document.getElementById('flashcard-sets');
+            setsContainer.innerHTML = '';
+            
+            if (flashcardSets.length === 0) {
+                setsContainer.innerHTML = '<p class="text-center">No flashcard sets yet. Create your first set!</p>';
+                return;
+            }
+            
+            flashcardSets.forEach(set => {
+                const setElement = document.createElement('div');
+                setElement.className = 'flashcard-set';
+                setElement.innerHTML = `
+                    <div class="flashcard-set-header">
+                        <h3>${set.name} (${set.subject})</h3>
+                        <div>
+                            <button onclick="studyFlashcardSet(${set.id})"><i class="fas fa-play"></i> Study</button>
+                            <button onclick="deleteFlashcardSet(${set.id})" class="delete"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                    <p>${set.cards.length} cards</p>
+                `;
+                setsContainer.appendChild(setElement);
+            });
+        }
+
+        function addFlashcard() {
+            const front = document.getElementById('flashcard-front').value.trim();
+            const back = document.getElementById('flashcard-back').value.trim();
+            
+            if (front && back && currentFlashcardSet) {
+                const set = flashcardSets.find(s => s.id === currentFlashcardSet);
+                if (set) {
+                    set.cards.push({ front, back });
+                    localStorage.setItem('flashcardSets', JSON.stringify(flashcardSets));
+                    document.getElementById('flashcard-front').value = '';
+                    document.getElementById('flashcard-back').value = '';
+                    showModal('Success', 'Flashcard added!');
+                }
+            } else {
+                showModal('Error', 'Please select a set and enter both front and back content.');
+            }
+        }
+
+        function studyFlashcardSet(setId) {
+            currentFlashcardSet = setId;
+            const set = flashcardSets.find(s => s.id === setId);
+            
+            if (set && set.cards.length > 0) {
+                document.getElementById('flashcard-sets').style.display = 'none';
+                document.getElementById('active-flashcard').style.display = 'block';
+                
+                currentCardIndex = 0;
+                showCard();
+            } else {
+                showModal('Error', 'This set has no cards. Add some cards first.');
+            }
+        }
+
+        function showCard() {
+            const set = flashcardSets.find(s => s.id === currentFlashcardSet);
+            if (set && set.cards[currentCardIndex]) {
+                document.getElementById('flashcard-front-text').textContent = set.cards[currentCardIndex].front;
+                document.getElementById('flashcard-back-text').textContent = set.cards[currentCardIndex].back;
+                document.getElementById('card-counter').textContent = `Card ${currentCardIndex + 1} of ${set.cards.length}`;
+                
+                // Reset card to front
+                document.getElementById('flashcard').classList.remove('flipped');
+            }
+        }
+
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+
+        function nextCard() {
+            const set = flashcardSets.find(s => s.id === currentFlashcardSet);
+            if (set) {
+                currentCardIndex = (currentCardIndex + 1) % set.cards.length;
+                showCard();
+            }
+        }
+
+        function previousCard() {
+            const set = flashcardSets.find(s => s.id === currentFlashcardSet);
+            if (set) {
+                currentCardIndex = (currentCardIndex - 1 + set.cards.length) % set.cards.length;
+                showCard();
+            }
+        }
+
+        function shuffleCards() {
+            const set = flashcardSets.find(s => s.id === currentFlashcardSet);
+            if (set) {
+                // Fisher-Yates shuffle
+                for (let i = set.cards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [set.cards[i], set.cards[j]] = [set.cards[j], set.cards[i]];
+                }
+                localStorage.setItem('flashcardSets', JSON.stringify(flashcardSets));
+                currentCardIndex = 0;
+                showCard();
+                showModal('Success', 'Cards shuffled!');
+            }
+        }
+
+        function deleteFlashcardSet(setId) {
+            showModal('Confirm Delete', 'Are you sure you want to delete this flashcard set?', () => {
+                flashcardSets = flashcardSets.filter(set => set.id !== setId);
+                localStorage.setItem('flashcardSets', JSON.stringify(flashcardSets));
+                renderFlashcardSets();
+            });
+        }
+
+        // Goals Functions
+        function addGoal() {
+            const title = document.getElementById('goal-title').value.trim();
+            const description = document.getElementById('goal-description').value.trim();
+            const deadline = document.getElementById('goal-deadline').value;
+            
+            if (title && deadline) {
+                goals.push({
+                    id: Date.now(),
+                    title,
+                    description,
+                    deadline,
+                    completed: false,
+                    progress: 0,
+                    created: new Date().toISOString()
+                });
+                localStorage.setItem('goals', JSON.stringify(goals));
+                renderGoals();
+                document.getElementById('goal-title').value = '';
+                document.getElementById('goal-description').value = '';
+                document.getElementById('goal-deadline').value = '';
+                showModal('Success', 'Goal added successfully!');
+            } else {
+                showModal('Error', 'Please fill all required fields.');
+            }
+        }
+
+        function renderGoals() {
+            const goalsList = document.getElementById('goals-list');
+            goalsList.innerHTML = '';
+            
+            if (goals.length === 0) {
+                goalsList.innerHTML = '<p class="text-center">No goals yet. Set your first study goal!</p>';
+                return;
+            }
+            
+            goals.forEach(goal => {
+                const goalElement = document.createElement('div');
+                goalElement.className = `list-item ${goal.completed ? 'completed' : ''}`;
+                goalElement.innerHTML = `
+                    <div class="list-item-content">
+                        <div class="list-item-title">${goal.title}</div>
+                        <div class="list-item-meta">
+                            <span>Target: ${goal.deadline}</span>
+                            <span>Progress: ${goal.progress}%</span>
+                        </div>
+                        ${goal.description ? `<p>${goal.description}</p>` : ''}
+                    </div>
+                    <div class="list-item-actions">
+                        <button class="complete" onclick="toggleGoalComplete(${goal.id})">
+                            <i class="fas fa-${goal.completed ? 'undo' : 'check'}"></i> ${goal.completed ? 'Undo' : 'Complete'}
+                        </button>
+                        <button class="delete" onclick="deleteGoal(${goal.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                `;
+                goalsList.appendChild(goalElement);
+            });
+        }
+
+        function toggleGoalComplete(id) {
+            const goal = goals.find(g => g.id === id);
+            goal.completed = !goal.completed;
+            goal.progress = goal.completed ? 100 : goal.progress;
+            localStorage.setItem('goals', JSON.stringify(goals));
+            renderGoals();
+        }
+
+        function deleteGoal(id) {
+            showModal('Confirm Delete', 'Are you sure you want to delete this goal?', () => {
+                goals = goals.filter(g => g.id !== id);
+                localStorage.setItem('goals', JSON.stringify(goals));
+                renderGoals();
+            });
+        }
+
         // Analytics (Enhanced)
         function updateCharts() {
             const period = parseInt(document.getElementById('analytics-period').value);
@@ -2492,6 +3213,71 @@
             subjectChart.data.labels = subjects;
             subjectChart.data.datasets[0].data = timeBySubject;
             subjectChart.update();
+        }
+
+        // PDF Export Functions
+        function exportTasksToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(20);
+            doc.text('StudyBuddy Tasks', 20, 20);
+            doc.setFontSize(12);
+            
+            let y = 40;
+            tasks.forEach((task, index) => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                doc.setFillColor(240, 240, 240);
+                doc.rect(20, y, 170, 20, 'F');
+                doc.setTextColor(0, 0, 0);
+                doc.text(`${task.subject}: ${task.description}`, 25, y + 8);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Due: ${task.deadline} | Priority: ${task.priority} | Status: ${task.completed ? 'Completed' : 'Pending'}`, 25, y + 15);
+                
+                y += 25;
+            });
+            
+            doc.save('studybuddy-tasks.pdf');
+            showModal('Success', 'Tasks exported to PDF successfully!');
+        }
+
+        function exportNotesToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(20);
+            doc.text('StudyBuddy Notes', 20, 20);
+            doc.setFontSize(12);
+            
+            let y = 40;
+            notes.forEach((note, index) => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                // Split note content into lines that fit the page width
+                const lines = doc.splitTextToSize(note.content, 170);
+                
+                // Calculate height needed for this note
+                const noteHeight = 10 + (lines.length * 6);
+                
+                doc.setFillColor(240, 240, 240);
+                doc.rect(20, y, 170, noteHeight, 'F');
+                doc.setTextColor(0, 0, 0);
+                doc.text(lines, 25, y + 8);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Category: ${note.tag} | Created: ${new Date(note.timestamp).toLocaleDateString()}`, 25, y + noteHeight - 3);
+                
+                y += noteHeight + 5;
+            });
+            
+            doc.save('studybuddy-notes.pdf');
+            showModal('Success', 'Notes exported to PDF successfully!');
         }
 
         // Settings (Enhanced)
@@ -2558,6 +3344,8 @@
                 notes = [];
                 timerLogs = [];
                 goals = [];
+                flashcardSets = [];
+                calendarEvents = [];
                 sessionCount = 0;
                 streakCount = 0;
                 timerState = { isRunning: false, currentTime: 0, totalTime: 0, isWorkSession: true };
@@ -2568,13 +3356,16 @@
                 updateCharts();
                 updateSessionInfo();
                 updateDashboard();
+                renderCalendar();
+                renderFlashcardSets();
+                renderGoals();
                 resetPomodoro();
                 showModal('Success', 'All data has been reset.');
             });
         }
 
         function exportData() {
-            const data = { tasks, notes, timerLogs, goals, settings, timerState };
+            const data = { tasks, notes, timerLogs, goals, flashcardSets, calendarEvents, settings, timerState };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2599,12 +3390,16 @@
                         notes = data.notes || [];
                         timerLogs = data.timerLogs || [];
                         goals = data.goals || [];
+                        flashcardSets = data.flashcardSets || [];
+                        calendarEvents = data.calendarEvents || [];
                         settings = data.settings || settings;
                         timerState = data.timerState || timerState;
                         localStorage.setItem('tasks', JSON.stringify(tasks));
                         localStorage.setItem('notes', JSON.stringify(notes));
                         localStorage.setItem('timerLogs', JSON.stringify(timerLogs));
                         localStorage.setItem('goals', JSON.stringify(goals));
+                        localStorage.setItem('flashcardSets', JSON.stringify(flashcardSets));
+                        localStorage.setItem('calendarEvents', JSON.stringify(calendarEvents));
                         localStorage.setItem('settings', JSON.stringify(settings));
                         localStorage.setItem('timerState', JSON.stringify(timerState));
                         applySettings();
@@ -2613,6 +3408,9 @@
                         renderTimerHistory();
                         updateCharts();
                         updateDashboard();
+                        renderCalendar();
+                        renderFlashcardSets();
+                        renderGoals();
                         initializeTimer();
                         showModal('Success', 'Data imported successfully!');
                     } catch (error) {
@@ -2663,6 +3461,21 @@
             // Escape key to close modal
             if (e.key === 'Escape') {
                 closeModal();
+            }
+            
+            // Space bar to flip flashcard
+            if (e.key === ' ' && document.getElementById('active-flashcard').style.display !== 'none') {
+                e.preventDefault();
+                flipCard();
+            }
+            
+            // Arrow keys for flashcards
+            if (document.getElementById('active-flashcard').style.display !== 'none') {
+                if (e.key === 'ArrowRight') {
+                    nextCard();
+                } else if (e.key === 'ArrowLeft') {
+                    previousCard();
+                }
             }
         });
 
